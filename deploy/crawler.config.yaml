@@ -1,0 +1,35 @@
+version: 1
+
+postgres:
+  dsn: postgres://search:search@postgres:5432/search?sslmode=disable
+
+http:
+  addr: ":8082"
+
+crawler:
+  whitelist_domains: []
+  seed_urls: []
+  depth_limit: 2
+  rps_per_host: 10
+  rps_burst: 20
+  workers: 0
+  html_fetch_timeout: 10s
+  html_max_size: 2MB
+  user_agent: GoseCrawler/1.0
+  content_types:
+    - text/html
+  languages:
+    - ru
+    - en
+
+robots:
+  respect: true
+  cache_ttl: 1h
+  user_agent: GoseCrawler/1.0
+
+sitemap:
+  enabled: true
+  refresh_interval: 24h
+
+proxies:
+  config_path: ./proxies.yaml

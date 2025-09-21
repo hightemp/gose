@@ -1,0 +1,23 @@
+# Proxy configuration (MVP preset)
+# Supported schemes: http, https, socks5
+# Rotation strategy: round_robin
+version: 1
+
+rotation: round_robin
+
+ban_policy:
+  consecutive_errors: 3
+  ban_duration: 10m
+
+healthcheck:
+  method: GET
+  url: https://example.com
+  timeout: 3s
+  interval: 1m
+
+proxies:
+  # Examples. Replace with your real proxies.
+  # - http://127.0.0.1:8888
+  # - socks5://127.0.0.1:1080
+  # Basic auth example:
+  # - http://user:pass@proxy.example.com:3128

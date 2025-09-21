@@ -1,0 +1,8 @@
+version: 1
+
+http:
+  addr: ":8081"
+
+ui:
+  title: "Gose Manager"
+  templates_dir: "/app/templates"

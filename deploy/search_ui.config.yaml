@@ -1,0 +1,17 @@
+version: 1
+
+http:
+  addr: ":8080"
+
+search:
+  page_size: 10
+  snippet_words: 20
+  highlight_start: "<mark>"
+  highlight_end: "</mark>"
+  languages:
+    - ru
+    - en
+
+ui:
+  title: "Gose Search"
+  templates_dir: "/app/templates"

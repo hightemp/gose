@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ .Q }} — {{ .Title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --blue: #1a0dab;
+      --green: #006621;
+      --text: #202124;
+      --muted: #70757a;
+      --bg: #fff;
+      --border: #dadce0;
+      --surface: #f8f9fa;
+      --hl: #fff59d;
+      /* Buttons */
+      --btn-bg: #f1f3f4;
+      --btn-border: #c9ccd1;
+      --btn-text: #202124;
+      --btn-hover: #e5e7eb;
+      /* Focus ring */
+      --focus-ring: rgba(79,140,255,.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .topbar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo-small { font-size: 22px; font-weight: 700; color: var(--blue); }
+    form.search { display: flex; gap: 8px; flex: 1; }
+    .search .q {
+      flex: 1;
+      width: 640px;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      outline: none;
+      background: var(--surface);
+      color: var(--text);
+    }
+    .search .q:focus { box-shadow: 0 1px 6px rgba(32,33,36,.28); border-color: transparent; }
+    .search select, .search button {
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 20px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+      transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .wrap { width: min(900px, calc(100% - 40px)); margin: 18px auto 32px; }
+    .result { margin: 22px 0; }
+    .result .url { color: var(--green); font-size: 13px; margin-bottom: 4px; }
+    .result .title { font-size: 20px; line-height: 1.3; margin: 0 0 3px; }
+    .result .snippet { color: #4d5156; font-size: 14px; }
+    .result .meta { color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .links a { margin-right: 12px; }
+
+    .pagination { margin-top: 24px; display: flex; gap: 12px; align-items: center; }
+    .pagination a { padding: 6px 10px; border: 1px solid var(--btn-border); border-radius: 16px; background: var(--btn-bg); color: var(--btn-text); transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+
+    mark { background: var(--hl); color: inherit; padding: 0 .1em; border-radius: 2px; }
+
+    /* Interactive hover/focus */
+    .search select:hover, .search button:hover,
+    .pagination a:hover, .settings-btn:hover,
+    .modal .actions button:hover { background: var(--btn-hover); text-decoration: none; }
+
+    .search .q:focus,
+    .search select:focus, .search button:focus,
+    .pagination a:focus, .settings-btn:focus,
+    .modal .actions button:focus {
+      box-shadow: 0 0 0 2px var(--focus-ring);
+      border-color: transparent;
+      outline: none;
+    }
+  </style>
+  <style>
+    /* Dark theme variables and Settings UI */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --blue: #8ab4f8;
+        --green: #22c55e;
+        --text: #e8eaed;
+        --muted: #9aa0a6;
+        --bg: #0b0c10;
+        --border: #2c2f36;
+        --surface: #151a20;
+        --hl: #4e4a1a;
+        --btn-bg: #1f2937;
+        --btn-border: #3a4150;
+        --btn-text: #e8eaed;
+        --btn-hover: #273244;
+        --focus-ring: rgba(79,140,255,.4);
+      }
+    }
+    :root.dark {
+      --blue: #8ab4f8;
+      --green: #22c55e;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --bg: #0b0c10;
+      --border: #2c2f36;
+      --surface: #151a20;
+      --hl: #4e4a1a;
+      --btn-bg: #1f2937;
+      --btn-border: #3a4150;
+      --btn-text: #e8eaed;
+      --btn-hover: #273244;
+      --focus-ring: rgba(79,140,255,.4);
+    }
+    .settings-btn {
+      position: fixed;
+      right: 16px; bottom: 16px;
+      z-index: 1000;
+      padding: 10px 12px;
+      border: 1px solid var(--btn-border);
+      border-radius: 20px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+      backdrop-filter: saturate(1.2) blur(6px);
+    }
+    .settings-btn:hover { box-shadow: 0 1px 6px rgba(0,0,0,.15); }
+    .modal {
+      position: fixed; inset: 0;
+      display: none; place-items: center;
+      background: rgba(0,0,0,.4);
+      z-index: 1100; padding: 16px;
+    }
+    .modal.open { display: grid; }
+    .modal .card {
+      width: min(520px, 100%);
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px;
+    }
+    .modal h3 { margin: 0 0 12px; font-size: 16px; }
+    .modal .row { margin: 10px 0; }
+    .modal .actions {
+      display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px;
+    }
+    .modal .actions button {
+      padding: 8px 12px; border: 1px solid var(--btn-border);
+      border-radius: 8px; background: var(--btn-bg); color: var(--btn-text); cursor: pointer;
+      transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    /* Compact mode adjustments */
+    body.compact .result { margin: 12px 0; }
+    body.compact .result .title { font-size: 18px; }
+    body.compact .result .snippet { font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo-small" href="/">{{ .Title }}</a>
+    <form class="search" action="/search" method="get">
+      <input class="q" type="text" name="q" value="{{ .Q }}" autofocus />
+      <select name="sort" aria-label="Sort">
+        <option value="" {{ if eq .Sort "" }}selected{{ end }}>Relevance</option>
+        <option value="fresh" {{ if eq .Sort "fresh" }}selected{{ end }}>Freshness</option>
+      </select>
+      <button type="submit">Search</button>
+    </form>
+  </header>
+
+  <main class="wrap">
+    <div class="results">
+      {{ range .Results }}
+        <article class="result">
+          <div class="url">{{ .URL }}</div>
+          <h3 class="title"><a href="{{ .URL }}" target="_blank" rel="noopener">{{ .Title }}</a></h3>
+          <div class="snippet">{{ raw .Snippet }}</div>
+          <div class="meta">
+            <span>Updated: {{ .FetchedAt }}</span>
+            <span class="links"> •
+              <a href="/page?url={{ .URL | urlquery }}">Details</a>
+              <a href="/view?url={{ .URL | urlquery }}" target="_blank" rel="noopener">HTML</a>
+            </span>
+          </div>
+        </article>
+      {{ end }}
+    </div>
+
+    <nav class="pagination">
+      {{ $page := .Page }}
+      {{ $pageSize := .PageSize }}
+      {{ $total := .Total }}
+      {{ if gt $page 1 }}
+        <a href="/search?q={{ .Q | urlquery }}&sort={{ .Sort }}&page={{ sub $page 1 }}">« Prev</a>
+      {{ end }}
+      {{ if lt (mul $page $pageSize) $total }}
+        <a href="/search?q={{ .Q | urlquery }}&sort={{ .Sort }}&page={{ add $page 1 }}">Next »</a>
+      {{ end }}
+      <span>Page {{ $page }}</span>
+    </nav>
+  </main>
+  <!-- Settings UI: button and modal -->
+  <button class="settings-btn" id="openSettings" aria-label="Open settings">Settings</button>
+  <div class="modal" id="settingsModal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="card">
+      <h3>Settings</h3>
+      <div class="row">
+        <div style="margin-bottom: 6px; color: var(--muted); font-size: 13px;">Theme</div>
+        <label style="margin-right:12px;"><input type="radio" name="theme" value="system"> System</label>
+        <label style="margin-right:12px;"><input type="radio" name="theme" value="light"> Light</label>
+        <label><input type="radio" name="theme" value="dark"> Dark</label>
+      </div>
+      <div class="row">
+        <label><input type="checkbox" id="compactMode"> Compact results</label>
+      </div>
+      <div class="actions">
+        <button id="settingsReset" type="button">Reset</button>
+        <button id="settingsClose" type="button">Close</button>
+        <button id="settingsSave" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      const KEY = 'sui_settings';
+      const $ = sel => document.querySelector(sel);
+      const modal = $('#settingsModal');
+      const btn = $('#openSettings');
+
+      const defaults = { theme: 'system', compact: false };
+
+      function load() {
+        try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem(KEY) || '{}')); }
+        catch(_) { return { ...defaults }; }
+      }
+      function save(s) { localStorage.setItem(KEY, JSON.stringify(s)); }
+
+      let systemMQ;
+
+      function applyTheme(s) {
+        const root = document.documentElement;
+        root.classList.remove('dark');
+        if (systemMQ) { systemMQ.onchange = null; systemMQ = null; }
+        if (s.theme === 'dark') {
+          root.classList.add('dark');
+        } else if (s.theme === 'system') {
+          systemMQ = window.matchMedia('(prefers-color-scheme: dark)');
+          if (systemMQ.matches) root.classList.add('dark');
+          systemMQ.onchange = () => { if (load().theme === 'system') applyTheme(load()); };
+        }
+      }
+      function applyCompact(s) {
+        document.body.classList.toggle('compact', !!s.compact);
+      }
+      function applyToForms(s) {
+        /* no-op: default sort/site removed */
+      }
+
+      function fillUI(s) {
+        (document.querySelector('input[name="theme"][value="' + s.theme + '"]') || document.querySelector('input[name="theme"][value="system"]')).checked = true;
+        $('#compactMode').checked = !!s.compact;
+      }
+
+      function open() { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); }
+      function close() { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
+
+      function init() {
+        const s = load();
+        applyTheme(s);
+        applyCompact(s);
+        applyToForms(s);
+        fillUI(s);
+
+        btn && btn.addEventListener('click', () => open());
+        $('#settingsClose') && $('#settingsClose').addEventListener('click', close);
+        modal && modal.addEventListener('click', e => { if (e.target === modal) close(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+
+        $('#settingsSave') && $('#settingsSave').addEventListener('click', () => {
+          const updated = {
+            theme: (document.querySelector('input[name="theme"]:checked') || {}).value || 'system',
+            compact: $('#compactMode').checked
+          };
+          save(updated);
+          applyTheme(updated);
+          applyCompact(updated);
+          applyToForms(updated);
+          fillUI(updated);
+          close();
+        });
+        $('#settingsReset') && $('#settingsReset').addEventListener('click', () => {
+          save(defaults);
+          applyTheme(defaults);
+          applyCompact(defaults);
+          applyToForms(defaults);
+          fillUI(defaults);
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>

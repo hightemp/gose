@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ .Title }} — Page Details</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --blue: #1a0dab;
+      --text: #202124;
+      --muted: #70757a;
+      --bg: #fff;
+      --border: #dadce0;
+      --surface: #f8f9fa;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --blue: #8ab4f8;
+        --text: #e8eaed;
+        --muted: #9aa0a6;
+        --bg: #0b0c10;
+        --border: #2c2f36;
+        --surface: #151a20;
+      }
+    }
+    :root.dark {
+      --blue: #8ab4f8;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --bg: #0b0c10;
+      --border: #2c2f36;
+      --surface: #151a20;
+    }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
+      margin: 24px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    a { color: var(--blue); }
+    .meta { color: var(--muted); font-size: 14px; margin: 8px 0 16px; }
+    .links a {
+      margin-right: 12px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      text-decoration: none;
+    }
+    .links a:hover { text-decoration: underline; }
+    .desc { color: var(--text); margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>{{ .Page.Title }}</h1>
+  <div class="meta">
+    URL: <a href="{{ .Page.URL }}" target="_blank" rel="noopener">{{ .Page.URL }}</a><br>
+    Updated: {{ .Page.FetchedAt }}
+  </div>
+  <div class="links">
+    <a href="/view?url={{ .Page.URL | urlquery }}" target="_blank" rel="noopener">Open saved HTML</a>
+    <a href="/">Back to search</a>
+  </div>
+  {{ if .Page.Description }}
+    <div class="desc">
+      <strong>Description:</strong> {{ .Page.Description }}
+    </div>
+  {{ end }}
+  <script>
+    (function () {
+      try {
+        const s = JSON.parse(localStorage.getItem('sui_settings') || '{}');
+        const theme = s.theme || 'system';
+        const root = document.documentElement;
+        root.classList.remove('dark');
+        if (theme === 'dark') {
+          root.classList.add('dark');
+        } else if (theme === 'system') {
+          const mq = window.matchMedia('(prefers-color-scheme: dark)');
+          if (mq.matches) root.classList.add('dark');
+        }
+      } catch (_) {}
+    })();
+  </script>
+</body>
+</html>

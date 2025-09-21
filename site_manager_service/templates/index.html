@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ .Title }} — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --card: #121317;
+      --text: #e6e6e6;
+      --muted: #9aa0a6;
+      --border: #1f232b;
+      --accent: #4f8cff;
+      --ok: #22c55e;
+      --warn: #eab308;
+      --err: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font: 14px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+    }
+    .title { font-weight: 700; font-size: 18px; }
+    .wrap { width: min(980px, calc(100% - 32px)); margin: 16px auto 28px; }
+    .grid {
+      display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px;
+    }
+    .card {
+      grid-column: span 4;
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px;
+    }
+    .card h3 { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
+    .kpi { font-size: 26px; font-weight: 700; }
+    .row { display: flex; justify-content: space-between; margin: 6px 0; color: var(--muted); }
+    .ok { color: var(--ok); } .warn { color: var(--warn); } .err { color: var(--err); }
+    .footer { margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .cards-2 .card { grid-column: span 6; }
+    @media (max-width: 800px) {
+      .card, .cards-2 .card { grid-column: span 12; }
+    }
+    .small { font-size: 12px; color: var(--muted); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">{{ .Title }}</div>
+    <nav class="small">
+      <a href="/metrics" target="_blank">/metrics (JSON)</a> •
+      <a href="/" onclick="location.reload(); return false;">Refresh</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="grid cards-2">
+      <div class="card">
+        <h3>Pages</h3>
+        <div class="kpi">{{ .Stats.PagesTotal }}</div>
+        <div class="footer">Total documents in the pages table</div>
+      </div>
+      <div class="card">
+        <h3>Database size</h3>
+        <div class="kpi mono">{{ .Stats.DBSizePretty }}</div>
+        <div class="footer">pg_database_size(current_database())</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Crawl queue (crawl_queue)</h3>
+        <div class="row"><span>Total</span><span class="mono">{{ .Stats.QueueTotal }}</span></div>
+        <div class="row"><span>queued</span><span class="mono">{{ .Stats.QueueQueued }}</span></div>
+        <div class="row"><span>processing</span><span class="mono">{{ .Stats.QueueProcessing }}</span></div>
+        <div class="row"><span class="ok">done</span><span class="mono ok">{{ .Stats.QueueDone }}</span></div>
+        <div class="row"><span class="err">error</span><span class="mono err">{{ .Stats.QueueError }}</span></div>
+      </div>
+      <div class="card">
+        <h3>Indexing</h3>
+        <div class="kpi">{{ printf "%.1f" .Stats.IndexedPercent }}%</div>
+        <div class="row"><span>Indexed</span><span class="mono">{{ .Stats.QueueDone }}</span></div>
+        <div class="row"><span>Total in queue</span><span class="mono">{{ .Stats.QueueTotal }}</span></div>
+        <div class="footer">Done share of total queue</div>
+      </div>
+      <div class="card">
+        <h3>Timestamp</h3>
+        <div class="kpi small">{{ .Stats.GeneratedAt }}</div>
+        <div class="footer">Metrics snapshot</div>
+      </div>
+    </section>
+
+    <p class="small">Hint: To limit indexing by domains and rate, use parameters in the crawler config (RPS, burst, depth).</p>
+  </main>
+
+  <script>
+    // Auto-refresh every 30 seconds (can be disabled)
+    setInterval(function(){ location.reload(); }, 30000);
+  </script>
+</body>
+</html>

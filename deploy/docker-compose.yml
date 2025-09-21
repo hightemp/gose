@@ -1,0 +1,96 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: search_pg
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-search}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-search}
+      - POSTGRES_DB=${POSTGRES_DB:-search}
+      - TZ=UTC
+    ports:
+      - "${PG_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-search} -d ${POSTGRES_DB:-search}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  search_crawler:
+    build:
+      context: ..
+      dockerfile: search_crawler_service/Dockerfile
+    container_name: search_crawler
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - CRAWLER_CONFIG_PATH=/app/deploy/crawler.config.yaml
+    volumes:
+      - ./:/app/deploy:ro
+    ports:
+      - "${CRAWLER_PORT:-18082}:8082"
+    restart: unless-stopped
+
+  search_ui:
+    build:
+      context: ..
+      dockerfile: search_ui_service/Dockerfile
+    container_name: search_ui
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - SEARCH_UI_CONFIG_PATH=/app/deploy/search_ui.config.yaml
+      - PG_DSN=${PG_DSN:-postgres://search:search@postgres:5432/search?sslmode=disable}
+    ports:
+      - "${SEARCH_UI_PORT:-18080}:8080"
+    restart: unless-stopped
+
+  domain_search:
+    build:
+      context: ..
+      dockerfile: domain_search_service/Dockerfile
+    container_name: domain_search
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - PG_DSN=${PG_DSN:-postgres://search:search@postgres:5432/search?sslmode=disable}
+    volumes:
+      - ./:/app/deploy:ro
+    restart: unless-stopped
+
+  site_manager:
+    build:
+      context: ..
+      dockerfile: site_manager_service/Dockerfile
+    container_name: site_manager
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - MANAGER_UI_CONFIG_PATH=/app/deploy/manager_ui.config.yaml
+      - PG_DSN=${PG_DSN:-postgres://search:search@postgres:5432/search?sslmode=disable}
+    ports:
+      - "${MANAGER_UI_PORT:-18083}:8081"
+    restart: unless-stopped
+
+  adminer:
+    image: adminer:4
+    container_name: adminer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+      - TZ=UTC
+    ports:
+      - "${ADMINER_PORT:-18081}:8080"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
