@@ -87,7 +87,10 @@
         <div class="kpi">{{ printf "%.1f" .Stats.IndexedPercent }}%</div>
         <div class="row"><span>Indexed</span><span class="mono">{{ .Stats.QueueDone }}</span></div>
         <div class="row"><span>Total in queue</span><span class="mono">{{ .Stats.QueueTotal }}</span></div>
-        <div class="footer">Done share of total queue</div>
+        <div class="row"><span>Elapsed</span><span class="mono">{{ .Stats.IndexingElapsedPretty }}</span></div>
+        <div class="row"><span>ETA</span><span class="mono">{{ .Stats.ETAPretty }}</span></div>
+        <div class="row"><span>Est. final DB size</span><span class="mono">{{ .Stats.EstimatedFinalDBSizePretty }}</span></div>
+        <div class="footer">Progress, timing and storage projection</div>
       </div>
       <div class="card">
         <h3>Timestamp</h3>
