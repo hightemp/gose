@@ -1,7 +1,7 @@
 version: 1
 
 generator:
-  # Профиль 3 (расширенный)
+  # Profile 3 (extended)
   tlds: [".com", ".net", ".org", ".ru"]
   min_length: 1
   max_length: 20
@@ -12,9 +12,9 @@ generator:
   forbid_double_hyphen: true
 
 limits:
-  concurrency: 150         # количество одновременных проверок
-  rate_per_second: 300     # глобальный лимит RPS
-  max_candidates: 100000   # максимум генерируемых доменных имен за один проход
+  concurrency: 150         # number of concurrent checks
+  rate_per_second: 300     # global RPS limit
+  max_candidates: 100000   # maximum generated domain names per pass
 
 http_check:
   timeout: "3s"
@@ -26,4 +26,4 @@ http_check:
   try_https_first: true
 
 run:
-  loop: true        # повторять цикл генерации при достижении max_candidates
+  loop: true        # repeat the generation loop when max_candidates is reached
