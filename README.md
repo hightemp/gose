@@ -11,3 +11,6 @@ Gose(Go search engine(MVP)) is a microservice-based web search system: a crawler
 ![](screenshots/2025-09-21_09-09.png)
 
 ![](screenshots/2025-09-21_09-25.png)
+
+
+![](https://asdertasd.site/counter/gose)
